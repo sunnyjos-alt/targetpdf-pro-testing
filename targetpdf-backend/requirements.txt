@@ -2,7 +2,7 @@ flask
 flask-cors
 pdf2docx
 PyMuPDF
-pytesseract
-Pillow
+pytesseract>=0.3.10
+pillow>=10.0.0
 python-docx
 gunicorn

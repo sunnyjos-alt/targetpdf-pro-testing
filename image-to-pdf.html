@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to PDF - TargetPDF</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        :root { --primary: #10B981; --primary-hover: #059669; --bg: #F8FAFC; --text: #1E293B; --border: #E2E8F0; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; margin: 0; min-height: 100vh; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; height: fit-content; }
+        h1 { font-size: 26px; margin: 0 0 8px 0; color: #0F172A; letter-spacing: -0.5px; }
+        p.subtitle { color: #64748B; margin: 0 0 30px 0; font-size: 15px; }
+        .drop-zone { border: 2px dashed #CBD5E1; border-radius: 12px; padding: 40px 20px; cursor: pointer; transition: all 0.2s ease; background: #F8FAFC; margin-bottom: 24px; position: relative; }
+        .drop-zone:hover { border-color: var(--primary); background: #ECFDF5; }
+        .drop-zone.active { border-color: var(--primary); background: #ECFDF5; }
+        input[type="file"] { display: none; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 24px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-reset { background: white; color: #64748B; border: 1px solid var(--border); margin-top: 16px; display: none; }
+        .btn-reset:hover { background: #F1F5F9; color: #0F172A; }
+        .spinner { display: none; border: 3px solid #E2E8F0; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .success-box { display: none; background: #ECFDF5; border: 1px solid #A7F3D0; padding: 24px; border-radius: 12px; margin-top: 24px; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .success-box p { margin: 0 0 16px; font-weight: 600; color: #065F46; font-size: 16px; }
+        .back-link { display: block; margin-bottom: 20px; color: #64748B; text-decoration: none; font-weight: 500; text-align: left; }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to TargetPDF</a>
+        <h1>Image to PDF</h1>
+        <p class="subtitle">Combine multiple JPG or PNG images into one clean PDF.</p>
+        
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('imageFiles').click()">
+            <div style="font-size: 32px; margin-bottom: 8px;">🖼️</div>
+            <p style="margin:0; font-weight:600; color:var(--primary);" id="dropText">Click to select images</p>
+            <p style="margin:4px 0 0; font-size:14px; color:#64748B;" id="fileName">No files selected</p>
+        </div>
+        
+        <input type="file" id="imageFiles" accept="image/png, image/jpeg" multiple>
+        
+        <button id="convertBtn" class="btn" style="display:none;" onclick="convertImagesToPdf()">
+            <span id="btnText">Create PDF</span>
+            <div id="loading" class="spinner"></div>
+        </button>
+        
+        <button id="resetBtn" class="btn btn-reset" onclick="resetTool()">Start Over / Choose Different Images</button>
+
+        <div id="successBox" class="success-box">
+            <p>Success! Your PDF is ready.</p>
+            <button class="btn" style="background:#059669;" onclick="downloadPdf()">
+                Download PDF
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let finalPdfUrl = null;
+
+        document.getElementById('imageFiles').addEventListener('change', function() {
+            if(this.files.length > 0) {
+                document.getElementById('fileName').innerText = this.files.length + ' file(s) selected';
+                document.getElementById('dropText').innerText = "Files Selected";
+                document.getElementById('dropZone').classList.add('active');
+                document.getElementById('convertBtn').style.display = 'flex';
+                document.getElementById('resetBtn').style.display = 'block';
+                document.getElementById('successBox').style.display = 'none';
+            }
+        });
+
+        async function convertImagesToPdf() {
+            const fileInput = document.getElementById('imageFiles');
+            const convertBtn = document.getElementById('convertBtn');
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+            const successBox = document.getElementById('successBox');
+
+            if (fileInput.files.length === 0) return alert("Please select at least one image.");
+
+            convertBtn.disabled = true;
+            btnText.innerText = "Processing...";
+            loading.style.display = 'block';
+            successBox.style.display = 'none';
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+
+                for (let i = 0; i < fileInput.files.length; i++) {
+                    const file = fileInput.files[i];
+                    const imageBytes = await file.arrayBuffer();
+                    
+                    let image;
+                    if (file.type === 'image/png') image = await pdfDoc.embedPng(imageBytes);
+                    else if (file.type === 'image/jpeg') image = await pdfDoc.embedJpg(imageBytes);
+                    else continue;
+
+                    const page = pdfDoc.addPage([image.width, image.height]);
+                    page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+                }
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                
+                if (finalPdfUrl) URL.revokeObjectURL(finalPdfUrl);
+                finalPdfUrl = URL.createObjectURL(blob);
+
+                successBox.style.display = 'block';
+                btnText.innerText = "Convert Again";
+                
+            } catch (error) {
+                alert("An error occurred during conversion. Please try again.");
+                btnText.innerText = "Create PDF";
+            } finally {
+                convertBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function downloadPdf() {
+            if (!finalPdfUrl) return;
+            const link = document.createElement('a');
+            link.href = finalPdfUrl;
+            link.download = 'TargetPDF_Images_Combined.pdf';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function resetTool() {
+            document.getElementById('imageFiles').value = '';
+            document.getElementById('fileName').innerText = "No files selected";
+            document.getElementById('dropText').innerText = "Click to select images";
+            document.getElementById('dropZone').classList.remove('active');
+            document.getElementById('convertBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('successBox').style.display = 'none';
+            document.getElementById('btnText').innerText = "Create PDF";
+            if (finalPdfUrl) {
+                URL.revokeObjectURL(finalPdfUrl);
+                finalPdfUrl = null;
+            }
+        }
+    </script>
+</body>
+</html>

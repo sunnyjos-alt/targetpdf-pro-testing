@@ -1,0 +1,436 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="google-site-verification" content="59s4Qd5QtUU_kGWjCixCFQXLSiqLwhn2XzXE1bHz9x8" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TargetPDF — PDF Compressor & Document Converter</title>
+<meta name="description" content="Compress PDFs to a target size and convert Word or Excel to PDF, or PDF to Word, Excel and PowerPoint. Free, no login; files are processed in your browser.">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3b82f6; --blue-dark: #2563eb; --indigo: #6366f1; --violet: #8b5cf6;
+    --ink: #0f172a; --ink-soft: #1e293b; --muted: #64748b; --line: #e5e9f0;
+    --green: #10b981; --green-dark: #059669; --amber: #f59e0b; --amber-dark: #d97706;
+    --purple: #7c3aed; --rose: #f43f5e; --pink: #ec4899; --cyan: #06b6d4; --teal: #14b8a6;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: #f4f6fb;
+    background-image: radial-gradient(circle at 0% 0%, rgba(99,102,241,0.12) 0%, transparent 40%), radial-gradient(circle at 100% 5%, rgba(236,72,153,0.10) 0%, transparent 40%), radial-gradient(circle at 50% 100%, rgba(6,182,212,0.08) 0%, transparent 45%), radial-gradient(circle at 0% 60%, rgba(139,92,246,0.08) 0%, transparent 40%);
+    background-attachment: fixed; color: var(--ink); line-height: 1.6; min-height: 100vh; padding: 24px 20px 60px; -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 760px; margin: 0 auto; }
+  .container.wide { max-width: 1120px; }
+  header { text-align: center; margin-bottom: 20px; }
+  header .logo { display: inline-flex; align-items: center; gap: 10px; }
+  header .logo svg.logo-img { width: 44px; height: 44px; display: block; flex-shrink: 0; filter: drop-shadow(0 4px 12px rgba(99,102,241,0.35)); }
+  header .wordmark { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; line-height: 1; display: inline-flex; align-items: baseline; }
+  header .wordmark .target { color: var(--ink); }
+  header .wordmark .pdf { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  header p { color: #475569; font-size: 15px; font-weight: 500; margin-top: 10px; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+  .card { background: #ffffff; border-radius: 20px; padding: 26px; box-shadow: 0 2px 6px rgba(15,23,42,0.05), 0 12px 36px rgba(15,23,42,0.08); margin-bottom: 22px; border: 1px solid rgba(226,232,240,0.9); }
+  .dropzone { border: 2px dashed #a5b4fc; border-radius: 18px; padding: 36px 22px; text-align: center; cursor: pointer; background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 50%, #fdf4ff 100%); transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s; position: relative; overflow: hidden; }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--indigo); box-shadow: 0 12px 30px rgba(99,102,241,0.15); }
+  .dropzone.dragover { transform: scale(1.005); }
+  .dropzone svg.up { color: var(--indigo); transition: transform 0.25s; position: relative; z-index: 1; filter: drop-shadow(0 4px 12px rgba(99,102,241,0.3)); }
+  .dropzone:hover svg.up, .dropzone.dragover svg.up { transform: translateY(-3px); }
+  .dropzone .dz-title { color: var(--ink); font-weight: 700; font-size: 17px; margin: 10px 0 4px; position: relative; z-index: 1; }
+  .dropzone .dz-sub { font-size: 13.5px; color: #64748b; margin: 4px 0; position: relative; z-index: 1; }
+  .dropzone .file-info { color: var(--indigo); font-weight: 700; font-size: 14.5px; margin-top: 14px; word-break: break-all; position: relative; z-index: 1; background: #fff; display: inline-block; padding: 7px 14px; border-radius: 12px; border: 2px solid #ddd6fe; box-shadow: 0 4px 12px rgba(99,102,241,0.1); }
+  .dropzone .size-hint { font-size: 12.5px; color: #7c3aed; margin-top: 10px; position: relative; z-index: 1; font-weight: 600; }
+  .dropzone .btn-inline { width: auto; display: inline-block; padding: 10px 26px; margin-top: 10px; position: relative; z-index: 1; }
+  .trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 28px; }
+  .trust-item { border-radius: 16px; padding: 18px 12px; text-align: center; position: relative; overflow: hidden; color: #fff; transition: transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(15,23,42,0.08); }
+  .trust-item:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(15,23,42,0.14); }
+  .trust-item.blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+  .trust-item.purple { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); }
+  .trust-item.pink { background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); }
+  .trust-item.teal { background: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%); }
+  .trust-item .icon-wrap { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.22); backdrop-filter: blur(6px); }
+  .trust-item .icon-wrap svg { width: 20px; height: 20px; color: #fff; }
+  .trust-item .title { display: block; font-size: 15px; font-weight: 800; letter-spacing: -0.2px; line-height: 1.2; margin-bottom: 3px; }
+  .trust-item .lbl { display: block; font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.9); line-height: 1.35; }
+  @media (max-width: 720px) { .trust-strip { grid-template-columns: repeat(2, 1fr); } }
+  .btn { display: block; width: 100%; padding: 14px 20px; font-size: 16px; font-weight: 700; font-family: inherit; border: none; border-radius: 12px; cursor: pointer; transition: all 0.15s; margin-top: 20px; letter-spacing: 0.1px; }
+  .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: #fff; box-shadow: 0 4px 14px rgba(59,130,246,0.3); }
+  .btn-primary:hover:not(:disabled) { box-shadow: 0 10px 24px rgba(59,130,246,0.4); transform: translateY(-1px); }
+  .btn-primary:active:not(:disabled) { transform: translateY(1px); }
+  .btn-primary:disabled { background: #cbd5e1; color: #fff; cursor: not-allowed; box-shadow: none; transform: none; }
+  .btn-secondary { background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%); color: #334155; box-shadow: 0 2px 6px rgba(15,23,42,0.06); }
+  .btn-secondary:hover { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); }
+  .target-section { margin-top: 24px; display: none; }
+  .target-section label { display: block; font-weight: 800; font-size: 16px; margin-bottom: 12px; color: var(--ink); letter-spacing: -0.2px; }
+  .target-row { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; }
+  .target-row input[type="number"] { flex: 1; min-width: 130px; padding: 14px 16px; font-size: 17px; font-weight: 600; border: 2px solid #ddd6fe; border-radius: 12px; outline: none; font-variant-numeric: tabular-nums; background: #fff; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+  .target-row input[type="number"]:focus { border-color: var(--indigo); box-shadow: 0 0 0 4px rgba(99,102,241,0.15); }
+  .target-row select { padding: 14px 18px; font-size: 16px; font-weight: 700; border: 2px solid #ddd6fe; border-radius: 12px; background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%); cursor: pointer; outline: none; color: var(--ink); transition: border-color 0.15s; }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .preset { padding: 9px 16px; border: 2px solid #e0e7ff; border-radius: 22px; background: #fff; font-size: 13.5px; color: #475569; cursor: pointer; transition: all 0.15s; font-family: inherit; font-weight: 600; }
+  .preset:hover { border-color: var(--indigo); color: var(--indigo); background: #eef2ff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.12); }
+  .preset.active { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(99,102,241,0.35); }
+  .analyse-hint { margin-top: 18px; font-size: 14px; color: #475569; text-align: center; display: none; font-weight: 500; }
+  .analyse-hint button { background: none; border: none; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-family: inherit; font-size: 14px; font-weight: 800; cursor: pointer; padding: 0; }
+  .health { margin-top: 24px; display: none; }
+  .health-card { background: #ffffff; border: 1px solid #ddd6fe; border-radius: 18px; overflow: hidden; box-shadow: 0 8px 24px rgba(99,102,241,0.1); }
+  .health-header { padding: 16px 22px; background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #7c3aed 100%); color: #fff; display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden; }
+  .health-header::before { content: ""; position: absolute; top: -50%; right: -10%; width: 40%; height: 200%; background: radial-gradient(circle, rgba(236,72,153,0.4) 0%, transparent 60%); pointer-events: none; }
+  .health-header .h-title { font-size: 15px; font-weight: 800; letter-spacing: 0.3px; display: flex; align-items: center; gap: 10px; position: relative; z-index: 1; }
+  .health-header .h-title .dot { width: 9px; height: 9px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 4px rgba(52,211,153,0.3); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .health-header .h-badge { margin-left: auto; font-size: 12px; background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 20px; font-weight: 700; color: #fff; position: relative; z-index: 1; backdrop-filter: blur(6px); }
+  .health-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .health-stat { padding: 16px 22px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; background: #fafbff; }
+  .health-stat:nth-child(2n) { border-right: none; }
+  .health-stat:nth-last-child(-n+2) { border-bottom: none; }
+  .health-stat .s-label { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--indigo); font-weight: 800; margin-bottom: 6px; }
+  .health-stat .s-value { font-size: 19px; font-weight: 800; color: var(--ink); letter-spacing: -0.4px; font-variant-numeric: tabular-nums; }
+  .health-stat .s-value.dim { color: #94a3b8; font-weight: 700; }
+  .health-deep { padding: 18px 22px; background: linear-gradient(180deg, #f5f3ff 0%, #faf5ff 100%); border-top: 1px solid #ede9fe; display: none; }
+  .health-deep.active { display: block; }
+  .health-deep .deep-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 15px; gap: 16px; }
+  .health-deep .deep-row .dl { color: #64748b; font-weight: 600; }
+  .health-deep .deep-row .dv { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .health-verdict { margin-top: 14px; padding: 16px 18px; border-radius: 12px; font-size: 14.5px; line-height: 1.55; font-weight: 500; }
+  .health-verdict.good { background: #ecfdf5; color: #065f46; border: 1.5px solid #a7f3d0; }
+  .health-verdict.ok { background: #fffbeb; color: #78350f; border: 1.5px solid #fcd34d; }
+  .health-verdict.limited { background: #fef2f2; color: #7f1d1d; border: 1.5px solid #fecaca; }
+  .recommend-result { margin-top: 18px; background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 50%, #fae8ff 100%); border: 1.5px solid #c4b5fd; border-radius: 18px; padding: 24px; display: none; box-shadow: 0 8px 24px rgba(124,58,237,0.12); }
+  .recommend-result .rr-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--purple); margin-bottom: 10px; }
+  .recommend-result .rr-target { font-size: 38px; font-weight: 900; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1.4px; line-height: 1.05; font-variant-numeric: tabular-nums; margin-bottom: 10px; }
+  .recommend-result .rr-quality { display: inline-block; background: #fff; color: var(--purple); border: 1.5px solid #c4b5fd; padding: 5px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 800; margin-bottom: 14px; }
+  .recommend-result .rr-note { font-size: 14.5px; color: #4c1d95; line-height: 1.55; margin-bottom: 18px; font-weight: 500; }
+  .recommend-result .btn { margin-top: 0; padding: 13px 22px; font-size: 15px; background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); box-shadow: 0 4px 14px rgba(124,58,237,0.3); color: #fff; }
+  .floor-box { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fcd34d; border-radius: 14px; padding: 22px; margin-top: 20px; text-align: center; display: none; }
+  .floor-box p { font-size: 14.5px; color: #78350f; line-height: 1.55; font-weight: 500; }
+  .progress { display: none; margin-top: 22px; }
+  .progress-bar-bg { height: 10px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%); width: 0%; transition: width 0.3s ease; border-radius: 6px; }
+  .progress-text { text-align: center; font-size: 14.5px; color: #475569; margin-top: 12px; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bridge { text-align: center; font-size: 14.5px; color: #475569; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); font-weight: 500; }
+  .bridge a { color: var(--indigo); text-decoration: none; font-weight: 800; }
+  .info-section { margin-top: 40px; }
+  .info-section h2 { font-size: 26px; margin-bottom: 8px; color: var(--ink); letter-spacing: -0.5px; font-weight: 900; }
+  .info-section .subtitle { color: #64748b; font-size: 15px; margin-bottom: 22px; max-width: 580px; font-weight: 500; }
+  .info-section .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .step { background: #fff; padding: 24px; border-radius: 16px; border: 1.5px solid #e5e9f0; transition: all 0.2s; position: relative; overflow: hidden; }
+  .step:hover { border-color: #c7d2fe; box-shadow: 0 12px 28px rgba(99,102,241,0.1); transform: translateY(-3px); }
+  .step .num { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #fff; border-radius: 50%; font-weight: 800; font-size: 15px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+  .step h4 { font-size: 16px; font-weight: 800; color: var(--ink); margin-bottom: 6px; letter-spacing: -0.2px; }
+  .step p { font-size: 14px; color: #475569; }
+  .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .why-card { background: #fff; border: 1.5px solid #e5e9f0; border-radius: 16px; padding: 24px; transition: all 0.2s; }
+  .why-card:hover { border-color: #c7d2fe; box-shadow: 0 12px 28px rgba(99,102,241,0.1); transform: translateY(-3px); }
+  .why-card .wc-icon { width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; color: #fff; box-shadow: 0 4px 12px rgba(15,23,42,0.15); }
+  .why-card:nth-child(1) .wc-icon { background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); }
+  .why-card:nth-child(2) .wc-icon { background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); }
+  .why-card:nth-child(3) .wc-icon { background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); }
+  .why-card:nth-child(4) .wc-icon { background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%); }
+  .why-card h4 { font-size: 16.5px; font-weight: 800; color: var(--ink); margin-bottom: 8px; letter-spacing: -0.2px; }
+  .why-card p { font-size: 14px; color: #475569; line-height: 1.6; }
+  .compare { background: #fff; border: 1.5px solid #e5e9f0; border-radius: 16px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(15,23,42,0.05); }
+  .compare table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare th, .compare td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+  .compare th { background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 100%); color: #fff; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .compare tr:last-child td { border-bottom: none; }
+  .compare tr:hover td { background: #fafbff; }
+  .compare .yes { color: #059669; font-weight: 800; }
+  .compare .no { color: #94a3b8; font-weight: 500; }
+  .compare td.us { background: linear-gradient(90deg, #eef2ff 0%, #f5f3ff 100%); font-weight: 700; color: var(--ink); }
+  .quote-block { background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #7c3aed 100%); color: #fff; border-radius: 20px; padding: 32px; margin: 32px 0; position: relative; overflow: hidden; box-shadow: 0 12px 32px rgba(76,29,149,0.2); }
+  .quote-block .qmark { font-size: 56px; line-height: 0.6; color: rgba(255,255,255,0.25); font-family: Georgia, serif; margin-bottom: 12px; position: relative; z-index: 1; }
+  .quote-block blockquote { font-size: 18px; line-height: 1.55; font-weight: 600; position: relative; z-index: 1; letter-spacing: -0.2px; }
+  .quote-block .attribution { margin-top: 16px; font-size: 13.5px; color: #ddd6fe; position: relative; z-index: 1; font-weight: 600; }
+  .faq-item { background: #fff; border: 1.5px solid #e5e9f0; border-radius: 16px; padding: 22px 24px; margin-bottom: 12px; transition: all 0.2s; position: relative; overflow: hidden; }
+  .faq-item:hover { border-color: #c7d2fe; box-shadow: 0 8px 20px rgba(99,102,241,0.08); }
+  .faq-item h4 { font-size: 16px; margin-bottom: 8px; color: var(--ink); font-weight: 800; letter-spacing: -0.2px; }
+  .faq-item p { font-size: 14.5px; color: #475569; line-height: 1.65; }
+  footer { text-align: center; font-size: 13.5px; color: #94a3b8; margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--line); font-weight: 500; }
+  footer a { color: #64748b; margin: 0 8px; text-decoration: none; font-weight: 600; }
+  footer .privacy-note { margin-top: 14px; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #64748b; font-weight: 600; background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); padding: 8px 16px; border-radius: 20px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .result-summary { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #6ee7b7; border-radius: 20px; padding: 36px; margin-bottom: 24px; text-align: center; box-shadow: 0 12px 32px rgba(16,185,129,0.15); position: relative; overflow: hidden; }
+  .result-summary h2 { font-size: 26px; color: #065f46; margin-bottom: 20px; font-weight: 900; letter-spacing: -0.4px; display: flex; align-items: center; justify-content: center; gap: 12px; position: relative; z-index: 1; }
+  .result-summary h2 .check { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border-radius: 50%; font-size: 18px; box-shadow: 0 4px 12px rgba(16,185,129,0.4); }
+  .result-summary .sizes { display: flex; justify-content: center; align-items: center; gap: 24px; font-size: 24px; margin-bottom: 16px; flex-wrap: wrap; font-variant-numeric: tabular-nums; position: relative; z-index: 1; }
+  .result-summary .sizes .before { color: #64748b; font-weight: 700; }
+  .result-summary .sizes .after { background: linear-gradient(135deg, #059669 0%, #10b981 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; font-size: 26px; }
+  .result-summary .sizes .arrow { color: #94a3b8; font-size: 22px; }
+  .result-summary .saved { display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; padding: 8px 20px; border-radius: 20px; font-size: 15px; font-weight: 800; margin-bottom: 24px; box-shadow: 0 6px 16px rgba(5,150,105,0.3); position: relative; z-index: 1; }
+  .result-summary .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; position: relative; z-index: 1; }
+  .result-summary .actions .btn { margin-top: 0; width: auto; padding: 14px 28px; }
+  .change-list { background: #fff; border: 1.5px solid #e5e9f0; border-radius: 20px; padding: 28px 30px; margin-bottom: 24px; box-shadow: 0 4px 16px rgba(15,23,42,0.05); }
+  .change-list h3 { font-size: 17px; font-weight: 900; color: var(--ink); margin-bottom: 20px; letter-spacing: -0.3px; }
+  .change-list .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .change-list .col h4 { font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 800; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .change-list .col.keep h4 { color: #059669; }
+  .change-list .col.change h4 { color: #d97706; }
+  .change-list ul { list-style: none; font-size: 14.5px; color: #334155; line-height: 1.7; }
+  .change-list ul li { padding: 5px 0; display: flex; align-items: flex-start; gap: 10px; }
+  .change-list ul li .icon { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 800; margin-top: 2px; }
+  .change-list .col.keep .icon { background: #d1fae5; color: #059669; }
+  .change-list .col.change .icon { background: #fef3c7; color: #d97706; }
+  .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .preview-header h3 { font-size: 17px; font-weight: 900; color: var(--ink); letter-spacing: -0.2px; }
+  .preview-badge { font-size: 12.5px; color: var(--indigo); background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); padding: 6px 14px; border-radius: 20px; font-weight: 800; }
+  .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .preview-panel { background: #fff; border: 1.5px solid #e5e9f0; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(15,23,42,0.04); }
+  .preview-panel .panel-head { padding: 12px 16px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-bottom: 1px solid #e5e9f0; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .preview-panel .panel-head .label { color: var(--indigo); font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; font-size: 11.5px; }
+  .preview-panel .panel-head .size { color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .preview-panel .panel-body { flex: 1; background: #eef2f7; min-height: 500px; display: flex; align-items: stretch; }
+  .preview-panel iframe { width: 100%; height: 100%; min-height: 500px; border: none; background: #fff; }
+  .preview-panel .panel-footer { padding: 12px 14px; background: #fff; border-top: 1px solid #e5e9f0; text-align: center; }
+  .preview-panel .panel-footer a { color: var(--indigo); font-size: 13.5px; font-weight: 800; text-decoration: none; }
+  .mobile-preview { display: none; text-align: center; padding: 30px 20px; background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%); border: 1.5px solid #e5e9f0; border-radius: 16px; }
+  .mobile-preview p { font-size: 14.5px; color: #475569; margin-bottom: 16px; font-weight: 500; }
+  .mobile-preview .btn { width: auto; display: inline-block; margin: 6px; padding: 13px 26px; }
+  @media (max-width: 800px) { .preview-grid { display: none; } .mobile-preview { display: block; } }
+  @media (max-width: 560px) { body { padding: 20px 14px 40px; } .card { padding: 22px; border-radius: 16px; } header .logo svg.logo-img { width: 38px; height: 38px; } header .wordmark { font-size: 25px; } .dropzone { padding: 30px 16px; } .trust-item .title { font-size: 14px; } .trust-item .lbl { font-size: 12px; } .change-list .cols { grid-template-columns: 1fr; gap: 20px; } }
+
+  /* PRO TOOLS CSS */
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .tool-card { background: #fff; border: 1.5px solid #e5e9f0; border-radius: 16px; padding: 24px 20px; text-align: center; text-decoration: none; display: block; transition: all 0.2s; box-shadow: 0 4px 12px rgba(15,23,42,0.03); }
+  .tool-card:hover { border-color: var(--indigo); box-shadow: 0 12px 28px rgba(99,102,241,0.12); transform: translateY(-3px); }
+  .tool-icon { width: 52px; height: 52px; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; color: #fff; font-size: 26px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .icon-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+  .icon-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  .icon-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .icon-green { background: linear-gradient(135deg, #10b981, #059669); }
+  .icon-teal { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+  .icon-pink { background: linear-gradient(135deg, #ec4899, #be185d); }
+  .tool-card h4 { font-size: 17px; font-weight: 800; color: var(--ink); margin-bottom: 6px; letter-spacing: -0.2px; }
+  .tool-card p { font-size: 13.5px; color: #64748b; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="container screen active" id="screenUpload">
+
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" class="logo-img" aria-hidden="true">
+        <defs>
+          <linearGradient id="bullseyeBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#6366f1"/></linearGradient>
+          <linearGradient id="targetGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e3a8a"/><stop offset="100%" stop-color="#0f172a"/></linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="url(#targetGradient)"/><circle cx="32" cy="32" r="22" fill="#ffffff"/><circle cx="32" cy="32" r="14" fill="#1e3a8a"/><circle cx="32" cy="32" r="7" fill="url(#bullseyeBlue)"/><circle cx="32" cy="32" r="2.8" fill="#ffffff"/><path d="M 32 32 L 62 2" stroke="#6366f1" stroke-width="3.5" stroke-linecap="round"/><path d="M 60 4 L 63 1 L 63 7 L 60 4 Z" fill="#3b82f6"/>
+      </svg>
+      <span class="wordmark"><span class="target">Target</span><span class="pdf">PDF</span></span>
+    </div>
+    <p>Compress any PDF to the exact size you need — privately, without losing readability.</p>
+  </header>
+
+  <!-- CORE COMPRESSOR -->
+  <div class="card">
+    <div class="dropzone" id="dropzone">
+      <svg class="up" width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p class="dz-title">Drag &amp; drop your PDF here</p>
+      <p class="dz-sub">or</p>
+      <button type="button" class="btn btn-secondary btn-inline" onclick="document.getElementById('fileInput').click()">Choose File</button>
+      <p class="size-hint">Max 10 MB · No login · Files never leave your device</p>
+      <input type="file" id="fileInput" accept="application/pdf" class="hidden">
+      <div class="file-info" id="fileInfo"></div>
+    </div>
+
+    <div class="target-section" id="targetSection">
+      <label for="targetValue">Compress to:</label>
+      <div class="target-row">
+        <input type="number" id="targetValue" placeholder="e.g. 500" min="1" inputmode="numeric">
+        <select id="targetUnit"><option value="KB">KB</option><option value="MB">MB</option></select>
+      </div>
+      <div class="presets">
+        <button type="button" class="preset" data-kb="100">Under 100 KB</button>
+        <button type="button" class="preset" data-kb="200">Under 200 KB</button>
+        <button type="button" class="preset" data-kb="500">Under 500 KB</button>
+        <button type="button" class="preset" data-kb="1024">Under 1 MB</button>
+        <button type="button" class="preset" data-kb="2048">Under 2 MB</button>
+        <button type="button" class="preset" data-kb="10240">Under 10 MB</button>
+      </div>
+      <div class="analyse-hint" id="analyseHint">Not sure what size to pick? <button type="button" id="analyseLink">Analyse this PDF →</button></div>
+    </div>
+
+    <div class="health" id="health">
+      <div class="health-card">
+        <div class="health-header"><span class="h-title"><span class="dot"></span> PDF Analysis</span><span class="h-badge" id="healthBadge">Analysing...</span></div>
+        <div class="health-grid">
+          <div class="health-stat"><div class="s-label">File size</div><div class="s-value" id="hSize">—</div></div>
+          <div class="health-stat"><div class="s-label">Pages</div><div class="s-value" id="hPages">—</div></div>
+          <div class="health-stat"><div class="s-label">Content type</div><div class="s-value dim" id="hType">Detecting...</div></div>
+          <div class="health-stat"><div class="s-label">Reduction potential</div><div class="s-value dim" id="hPotential">—</div></div>
+        </div>
+        <div class="health-deep" id="healthDeep">
+          <div class="deep-row"><span class="dl">Smallest readable size</span><span class="dv" id="hFloor">—</span></div>
+          <div class="deep-row"><span class="dl">Maximum reduction</span><span class="dv" id="hMaxReduction">—</span></div>
+          <div class="health-verdict" id="hVerdict">—</div>
+        </div>
+      </div>
+      <div class="recommend-result" id="recommendResult">
+        <div class="rr-label">Recommended target</div><div class="rr-target" id="recommendTarget">—</div><div class="rr-quality" id="recommendQuality">—</div><div class="rr-note" id="recommendNote">—</div>
+        <button type="button" class="btn" id="recommendApply">Use this target</button>
+      </div>
+    </div>
+
+    <div class="floor-box" id="floorBox"><p id="floorText"></p><button type="button" class="btn btn-primary" id="floorBtn">Compress to that size</button></div>
+    <button type="button" class="btn btn-primary" id="compressBtn" disabled>Compress PDF</button>
+    <div class="progress" id="progress"><div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div><p class="progress-text" id="progressText">Compressing...</p></div>
+    
+    <div class="bridge">Also need to resize a photo or signature? <a href="https://www.docfit.net" target="_blank" rel="noopener">Try DocFit →</a></div>
+  </div>
+
+  <!-- PRO TOOLS GRID -->
+  <div class="info-section" style="margin-top: 10px; margin-bottom: 30px;">
+    <h2 style="text-align: center;">Pro Document Tools</h2>
+    <p class="subtitle" style="text-align: center; margin-left: auto; margin-right: auto;">Free, fast, and secure conversions. No login required.</p>
+    <div class="tools-grid">
+      <a href="office-to-pdf.html" class="tool-card"><div class="tool-icon icon-blue">📄</div><h4>Office to PDF</h4><p>Word & Excel to PDF</p></a>
+      <a href="pdf-to-word.html" class="tool-card"><div class="tool-icon icon-purple">📝</div><h4>PDF to Word</h4><p>Extract text & tables</p></a>
+      <a href="pdf-to-image.html" class="tool-card"><div class="tool-icon icon-orange">🖼️</div><h4>PDF to Image</h4><p>Convert pages to JPG/PNG</p></a>
+      <a href="image-to-pdf.html" class="tool-card"><div class="tool-icon icon-green">📸</div><h4>Image to PDF</h4><p>Combine photos to PDF</p></a>
+      <a href="pdf-to-excel.html" class="tool-card"><div class="tool-icon icon-teal">📊</div><h4>PDF to Excel</h4><p>Extract text to spreadsheet</p></a>
+      <a href="pdf-to-ppt.html" class="tool-card"><div class="tool-icon icon-pink">📽️</div><h4>PDF to PPT</h4><p>Create image-based slides</p></a>
+    </div>
+  </div>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <div class="trust-item blue"><span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span><span class="title">100% Private</span><span class="lbl">Files stay on device</span></div>
+    <div class="trust-item purple"><span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span class="title">No Waiting</span><span class="lbl">Instant for small files</span></div>
+    <div class="trust-item pink"><span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span class="title">Always Free</span><span class="lbl">No login. No limits.</span></div>
+    <div class="trust-item teal"><span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span class="title">Exact Target</span><span class="lbl">Type KB or MB you need</span></div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="info-section">
+    <h2>How it works</h2>
+    <p class="subtitle">Three steps. No account. No waiting on servers.</p>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h4>Upload</h4><p>Drop your PDF. It never leaves your device.</p></div>
+      <div class="step"><div class="num">2</div><h4>Set your size</h4><p>Type the exact KB or MB you need. Or let us recommend one.</p></div>
+      <div class="step"><div class="num">3</div><h4>Download</h4><p>Preview both versions. Text stays sharp. Signatures stay intact.</p></div>
+    </div>
+  </div>
+
+  <!-- WHY TARGETPDF -->
+  <div class="info-section">
+    <h2>Why TargetPDF</h2>
+    <p class="subtitle">Most PDF tools compress to whatever size they feel like. We compress to the size you need.</p>
+    <div class="why-grid">
+      <div class="why-card"><div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div><h4>Exact target size</h4><p>Type "500 KB" and get just under 500 KB. Not "small", not "medium" — the actual number you need.</p></div>
+      <div class="why-card"><div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><h4>Truly private</h4><p>Compression happens inside your browser. Your file never touches our servers. Open DevTools to verify.</p></div>
+      <div class="why-card"><div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h4>Tell me what's possible</h4><p>Before you compress, we analyse the PDF and show you what's achievable. No surprises after the download.</p></div>
+      <div class="why-card"><div class="wc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg></div><h4>Honest about quality</h4><p>If a PDF can't shrink without hurting readability, we tell you. We don't hand you a blurry file and hope.</p></div>
+    </div>
+
+    <div class="compare">
+      <table>
+        <thead><tr><th>Feature</th><th>TargetPDF</th><th>Typical free tools</th></tr></thead>
+        <tbody>
+          <tr><td>Exact KB / MB target</td><td class="us yes">Yes</td><td class="no">No — only presets</td></tr>
+          <tr><td>Files stay on your device</td><td class="us yes">Yes</td><td class="no">No — uploaded to servers</td></tr>
+          <tr><td>Daily usage limits</td><td class="us yes">None</td><td class="no">2–3 files/day</td></tr>
+          <tr><td>Login required</td><td class="us yes">Never</td><td class="no">Often</td></tr>
+          <tr><td>Watermarks</td><td class="us yes">None</td><td class="no">Sometimes</td></tr>
+          <tr><td>Quality warning</td><td class="us yes">Yes</td><td class="no">No</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="quote-block"><div class="qmark">&ldquo;</div><blockquote>I typed 500 KB. It gave me 480 KB. The small print is still readable. And the file never left my computer.</blockquote><div class="attribution">— What we want every user to say</div></div>
+
+  <div class="info-section">
+    <h2>Frequently asked questions</h2>
+    <p class="subtitle">Everything you might want to know before uploading.</p>
+    <div class="faq-item"><h4>Is TargetPDF really free?</h4><p>Yes — completely. No login, no usage limits, no watermark, no hidden charges, no premium tier. Compression runs on your device, so we have no server costs to pass on.</p></div>
+    <div class="faq-item"><h4>Do you upload my PDF to a server?</h4><p>No. Everything happens inside your browser using WebAssembly. Your PDF is never transmitted anywhere. You can verify this by opening DevTools → Network tab while compressing — you'll see no upload request.</p></div>
+    <div class="faq-item"><h4>What does "exact target size" mean?</h4><p>Instead of choosing "low / medium / high" compression and hoping, you type the number you need — 500 KB, 1 MB, 200 KB — and TargetPDF finds the best quality that fits under that number. It's the difference between guessing and knowing.</p></div>
+    <div class="faq-item"><h4>Will my text become blurry?</h4><p>No. Text is never touched — only images get resized to hit your target. If the PDF is scanned (image-only), we detect that and warn you before compressing.</p></div>
+    <div class="faq-item"><h4>Why does it sometimes say "cannot compress below X KB"?</h4><p>Every PDF has a floor — the smallest size it can reach without becoming unreadable. When your target is below that floor, we tell you the honest minimum and offer to compress to it instead. We don't silently hand you a blurry file.</p></div>
+    <div class="faq-item"><h4>How long does compression take?</h4><p>Small PDFs (under 1 MB) finish in 2–5 seconds. Large scanned documents can take 30–60 seconds because all the work happens on your device. You'll see a progress bar the whole time.</p></div>
+    <div class="faq-item"><h4>What's the maximum file size?</h4><p>10 MB. Larger files would take too long to process locally. For very big documents, a dedicated desktop tool like Ghostscript is still faster.</p></div>
+    <div class="faq-item"><h4>Does it work on mobile?</h4><p>Yes. The tool is fully responsive. On mobile, PDF previews open in a new tab instead of side-by-side, since phone browsers don't render PDFs inline.</p></div>
+    <div class="faq-item"><h4>Will my signatures and stamps survive compression?</h4><p>Yes. Signatures and stamps are part of the page image or vector layer, and Ghostscript preserves them by default. We only resize embedded images to reduce size.</p></div>
+    <div class="faq-item"><h4>Can I compress multiple PDFs at once?</h4><p>Not yet. Batch compression is on our roadmap. For now, compress one file, download it, then compress the next.</p></div>
+  </div>
+
+  <footer>
+    TargetPDF · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Contact</a>
+    <p class="privacy-note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Your files never leave your device.</p>
+  </footer>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div class="container wide screen" id="screenResult">
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" class="logo-img" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" fill="#0f172a"/><circle cx="32" cy="32" r="22" fill="#ffffff"/><circle cx="32" cy="32" r="14" fill="#1e3a8a"/><circle cx="32" cy="32" r="7" fill="#6366f1"/><circle cx="32" cy="32" r="2.8" fill="#ffffff"/><path d="M 32 32 L 62 2" stroke="#6366f1" stroke-width="3.5" stroke-linecap="round"/><path d="M 60 4 L 63 1 L 63 7 L 60 4 Z" fill="#3b82f6"/>
+      </svg>
+      <span class="wordmark"><span class="target">Target</span><span class="pdf">PDF</span></span>
+    </div>
+  </header>
+
+  <div class="result-summary">
+    <h2><span class="check">✓</span> Compression complete</h2>
+    <div class="sizes"><span class="before" id="resultBefore">—</span><span class="arrow">→</span><span class="after" id="resultAfter">—</span></div>
+    <div class="saved" id="resultSaved"></div>
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="downloadBtn">Download Compressed PDF</button>
+      <button type="button" class="btn btn-secondary" id="resetBtn">Compress Another PDF</button>
+    </div>
+  </div>
+
+  <div class="change-list">
+    <h3>What changed in your PDF</h3>
+    <div class="cols">
+      <div class="col keep">
+        <h4>✓ Stayed the same</h4>
+        <ul>
+          <li><span class="icon">✓</span><span id="changePages">All pages kept</span></li>
+          <li><span class="icon">✓</span><span id="changeText">Text content unchanged</span></li>
+          <li><span class="icon">✓</span><span id="changeLayout">Page layout and structure intact</span></li>
+        </ul>
+      </div>
+      <div class="col change">
+        <h4>• What changed</h4>
+        <ul>
+          <li><span class="icon">•</span><span id="changeImages">Images resized to fit your target size</span></li>
+          <li><span class="icon">•</span><span id="changeMeta">Hidden metadata removed</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="preview-header"><h3>Quality Preview</h3><span class="preview-badge">Side-by-side view</span></div>
+    <div class="preview-grid">
+      <div class="preview-panel">
+        <div class="panel-head"><span class="label">Original</span><span class="size" id="previewOriginalSize">—</span></div>
+        <div class="panel-body"><iframe id="previewOriginalFrame" title="Original PDF"></iframe></div>
+        <div class="panel-footer"><a id="previewOriginalLink" href="#" target="_blank" rel="noopener">Open in new tab →</a></div>
+      </div>
+      <div class="preview-panel">
+        <div class="panel-head"><span class="label">Compressed</span><span class="size" id="previewCompressedSize">—</span></div>
+        <div class="panel-body"><iframe id="previewCompressedFrame" title="Compressed PDF"></iframe></div>
+        <div class="panel-footer"><a id="previewCompressedLink" href="#" target="_blank" rel="noopener">Open in new tab →</a></div>
+      </div>
+    </div>
+    <div class="mobile-preview">
+      <p>PDF preview is available on desktop. Use the buttons below to open each file.</p>
+      <a class="btn btn-secondary" id="mobileOriginalLink" href="#" target="_blank" rel="noopener">Open Original</a>
+      <a class="btn btn-secondary" id="mobileCompressedLink" href="#" target="_blank" rel="noopener">Open Compressed</a>
+    </div>
+  </div>
+
+  <footer>
+    TargetPDF · <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Contact</a>
+    <p class="privacy-note">Your files never leave your device.</p>
+  </footer>
+</div>
+
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

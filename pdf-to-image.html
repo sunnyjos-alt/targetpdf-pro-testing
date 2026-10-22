@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Image - TargetPDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <style>
+        :root { --primary: #4F46E5; --primary-hover: #4338CA; --bg: #F8FAFC; --text: #1E293B; --border: #E2E8F0; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; margin: 0; min-height: 100vh; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; height: fit-content; }
+        h1 { font-size: 26px; margin: 0 0 8px 0; color: #0F172A; letter-spacing: -0.5px; }
+        p.subtitle { color: #64748B; margin: 0 0 30px 0; font-size: 15px; }
+        .drop-zone { border: 2px dashed #CBD5E1; border-radius: 12px; padding: 40px 20px; cursor: pointer; transition: all 0.2s ease; background: #F8FAFC; margin-bottom: 24px; position: relative; }
+        .drop-zone:hover { border-color: var(--primary); background: #EEF2FF; }
+        .drop-zone.active { border-color: var(--primary); background: #EEF2FF; }
+        input[type="file"] { display: none; }
+        .controls { display: flex; gap: 12px; margin-bottom: 24px; }
+        select { flex: 1; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; color: var(--text); background: white; outline: none; transition: border 0.2s; }
+        select:focus { border-color: var(--primary); }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 24px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-reset { background: white; color: #64748B; border: 1px solid var(--border); margin-top: 16px; display: none; }
+        .btn-reset:hover { background: #F1F5F9; color: #0F172A; }
+        .spinner { display: none; border: 3px solid #E2E8F0; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .results { display: none; margin-top: 30px; text-align: left; border-top: 1px solid var(--border); padding-top: 20px; }
+        .image-card { display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .image-card span { font-weight: 500; font-size: 15px; color: #334155; }
+        .download-link { background: #10B981; color: white; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+        .download-link:hover { background: #059669; }
+        .back-link { display: block; margin-bottom: 20px; color: #64748B; text-decoration: none; font-weight: 500; text-align: left; }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to TargetPDF</a>
+        <h1>PDF to Image</h1>
+        <p class="subtitle">Convert PDF pages into high-quality JPG or PNG images.</p>
+        
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfFile').click()">
+            <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
+            <p style="margin:0; font-weight:600; color:var(--primary);" id="dropText">Click to select a PDF</p>
+            <p style="margin:4px 0 0; font-size:14px; color:#64748B;" id="fileName">No file selected</p>
+        </div>
+        
+        <input type="file" id="pdfFile" accept=".pdf">
+        
+        <div class="controls" id="controls" style="display:none;">
+            <select id="format">
+                <option value="image/jpeg">JPG Format (Smaller size)</option>
+                <option value="image/png">PNG Format (Higher quality)</option>
+            </select>
+        </div>
+        
+        <button id="convertBtn" class="btn" style="display:none;" onclick="convertPdfToImage()">
+            <span id="btnText">Convert to Images</span>
+            <div id="loading" class="spinner"></div>
+        </button>
+        
+        <button id="resetBtn" class="btn btn-reset" onclick="resetTool()">Start Over / Choose Another File</button>
+
+        <div id="results" class="results">
+            <h3 style="margin-top:0; font-size:18px; color:#0F172A;">Your Images are Ready</h3>
+            <div id="imageList"></div>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        document.getElementById('pdfFile').addEventListener('change', function() {
+            if(this.files.length > 0) {
+                document.getElementById('fileName').innerText = this.files[0].name;
+                document.getElementById('dropText').innerText = "File Selected";
+                document.getElementById('dropZone').classList.add('active');
+                document.getElementById('controls').style.display = 'flex';
+                document.getElementById('convertBtn').style.display = 'flex';
+                document.getElementById('resetBtn').style.display = 'block';
+                document.getElementById('results').style.display = 'none';
+            }
+        });
+
+        async function convertPdfToImage() {
+            const fileInput = document.getElementById('pdfFile');
+            const format = document.getElementById('format').value;
+            const convertBtn = document.getElementById('convertBtn');
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            const imageList = document.getElementById('imageList');
+
+            if (fileInput.files.length === 0) return alert("Please select a PDF file first.");
+
+            convertBtn.disabled = true;
+            btnText.innerText = "Processing...";
+            loading.style.display = 'block';
+            results.style.display = 'none';
+            imageList.innerHTML = '';
+
+            const file = fileInput.files[0];
+            const fileReader = new FileReader();
+
+            fileReader.onload = async function() {
+                try {
+                    const typedarray = new Uint8Array(this.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const viewport = page.getViewport({ scale: 2.0 });
+                        
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        await page.render({ canvasContext: context, viewport: viewport }).promise;
+                        const dataUrl = canvas.toDataURL(format, 0.9);
+                        const ext = format === 'image/jpeg' ? 'jpg' : 'png';
+                        
+                        const card = document.createElement('div');
+                        card.className = 'image-card';
+                        card.innerHTML = `
+                            <span>Page ${i}</span>
+                            <a href="${dataUrl}" download="TargetPDF_Page_${i}.${ext}" class="download-link">
+                                Download
+                            </a>
+                        `;
+                        imageList.appendChild(card);
+                    }
+                    results.style.display = 'block';
+                } catch (error) {
+                    alert("Error converting PDF. Please try a different file.");
+                } finally {
+                    convertBtn.disabled = false;
+                    btnText.innerText = "Convert Again";
+                    loading.style.display = 'none';
+                }
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        function resetTool() {
+            document.getElementById('pdfFile').value = '';
+            document.getElementById('fileName').innerText = "No file selected";
+            document.getElementById('dropText').innerText = "Click to select a PDF";
+            document.getElementById('dropZone').classList.remove('active');
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('convertBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('imageList').innerHTML = '';
+            document.getElementById('btnText').innerText = "Convert to Images";
+        }
+    </script>
+</body>
+</html>

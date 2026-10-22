@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office to PDF - TargetPDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --primary: #3B82F6; --primary-hover: #2563EB; --bg: #F8FAFC; --text: #1E293B; --border: #E2E8F0; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; margin: 0; min-height: 100vh; }
+        .container { background: white; width: 100%; max-width: 600px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; height: fit-content; }
+        h1 { font-size: 26px; margin: 0 0 8px 0; color: #0F172A; letter-spacing: -0.5px; }
+        p.subtitle { color: #64748B; margin: 0 0 30px 0; font-size: 15px; }
+        .drop-zone { border: 2px dashed #CBD5E1; border-radius: 12px; padding: 40px 20px; cursor: pointer; transition: all 0.2s ease; background: #F8FAFC; margin-bottom: 24px; }
+        .drop-zone:hover { border-color: var(--primary); background: #EFF6FF; }
+        .drop-zone.active { border-color: var(--primary); background: #EFF6FF; }
+        input[type="file"] { display: none; }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 24px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .btn-reset { background: white; color: #64748B; border: 1px solid var(--border); margin-top: 16px; display: none; }
+        .btn-reset:hover { background: #F1F5F9; color: #0F172A; }
+        .spinner { display: none; border: 3px solid #E2E8F0; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .back-link { display: block; margin-bottom: 20px; color: #64748B; text-decoration: none; font-weight: 500; text-align: left; }
+        .back-link:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to TargetPDF</a>
+        <h1>Office to PDF</h1>
+        <p class="subtitle">Convert Word, Excel, or Text into a PDF file.</p>
+        
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('officeFile').click()">
+            <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
+            <p style="margin:0; font-weight:600; color:var(--primary);" id="dropText">Click to select a document</p>
+            <p style="margin:4px 0 0; font-size:14px; color:#64748B;" id="fileName">No file selected</p>
+        </div>
+        
+        <input type="file" id="officeFile" accept=".docx, .xlsx, .txt">
+        
+        <button id="convertBtn" class="btn" style="display:none;" onclick="convertToPdf()">
+            <span id="btnText">Convert to PDF</span>
+            <div id="loading" class="spinner"></div>
+        </button>
+        
+        <button id="resetBtn" class="btn btn-reset" onclick="resetTool()">Start Over</button>
+    </div>
+
+    <script>
+        document.getElementById('officeFile').addEventListener('change', function() {
+            if(this.files.length > 0) {
+                document.getElementById('fileName').innerText = this.files[0].name;
+                document.getElementById('dropText').innerText = "File Selected";
+                document.getElementById('dropZone').classList.add('active');
+                document.getElementById('convertBtn').style.display = 'flex';
+                document.getElementById('resetBtn').style.display = 'block';
+            }
+        });
+
+        async function convertToPdf() {
+            const fileInput = document.getElementById('officeFile');
+            const convertBtn = document.getElementById('convertBtn');
+            const btnText = document.getElementById('btnText');
+            const loading = document.getElementById('loading');
+
+            if (fileInput.files.length === 0) return;
+            const file = fileInput.files[0];
+            const fileExt = file.name.split('.').pop().toLowerCase();
+
+            convertBtn.disabled = true;
+            btnText.innerText = "Converting...";
+            loading.style.display = 'block';
+
+            try {
+                let htmlContent = "";
+                if (fileExt === 'docx') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                    htmlContent = result.value;
+                } else if (fileExt === 'xlsx') {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                    htmlContent = XLSX.utils.sheet_to_html(workbook.Sheets[workbook.SheetNames[0]]);
+                } else if (fileExt === 'txt') {
+                    const text = await file.text();
+                    htmlContent = `<pre style="white-space: pre-wrap; font-family: sans-serif;">${text}</pre>`;
+                } else {
+                    throw new Error("Unsupported format");
+                }
+
+                const element = document.createElement('div');
+                element.innerHTML = htmlContent;
+                element.style.padding = '20px';
+                element.style.fontFamily = 'Arial, sans-serif';
+
+                const opt = {
+                    margin: 10, filename: 'TargetPDF_Converted.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                await html2pdf().set(opt).from(element).save();
+                btnText.innerText = "Convert Again";
+            } catch (error) {
+                alert("Error converting file. Please make sure it is a valid Word, Excel, or Text file.");
+                btnText.innerText = "Convert to PDF";
+            } finally {
+                convertBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        function resetTool() {
+            document.getElementById('officeFile').value = '';
+            document.getElementById('fileName').innerText = "No file selected";
+            document.getElementById('dropText').innerText = "Click to select a document";
+            document.getElementById('dropZone').classList.remove('active');
+            document.getElementById('convertBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'none';
+            document.getElementById('btnText').innerText = "Convert to PDF";
+        }
+    </script>
+</body>
+</html>

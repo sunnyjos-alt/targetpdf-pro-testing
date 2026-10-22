@@ -273,7 +273,7 @@
         btnText.textContent = "Converting your PDF…";
         showStatus("info", "Converting your document", "Your PDF has been sent to the converter. Processing time depends on the document's pages and layout.");
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 180000);
+        const timeout = setTimeout(() => controller.abort(), 720000);
         let response;
         try {
           response = await fetch(BACKEND_URL + "/convert-to-word", { method: "POST", body: formData, signal: controller.signal });
@@ -295,14 +295,17 @@
         const totalSeconds = ((performance.now() - started) / 1000).toFixed(1);
         const serverSeconds = response.headers.get("X-Conversion-Seconds");
         const timing = serverSeconds ? "Server conversion: " + Number(serverSeconds).toFixed(1) + " s · Total: " + totalSeconds + " s" : "Total time: " + totalSeconds + " s";
+        const mode = response.headers.get("X-Conversion-Mode");
+        const notes = response.headers.get("X-Conversion-Notes");
+        const resultDetails = [timing, mode ? "Method: " + mode : "", notes || ""].filter(Boolean).join(" · ");
         convertBtn.hidden = true;
         downloadBtn.hidden = false;
         resetBtn.hidden = false;
         setStep(3);
-        showStatus("success", "Your Word document is ready", "Conversion finished successfully. Use the Download Word button to save your editable document.", timing);
+        showStatus("success", "Your Word document is ready", "Conversion finished. Please review the document, especially scanned pages and complex layouts.", resultDetails);
       } catch (error) {
         let message = error.message || "An unexpected error occurred.";
-        if (error.name === "AbortError") message = "Conversion took longer than three minutes and was stopped. The server may be overloaded or the PDF may be complex. Please try again.";
+        if (error.name === "AbortError") message = "Conversion took longer than 12 minutes and was stopped. Very long or complex books may exceed the free server limits. Try a smaller PDF or split the book into chapters.";
         else if (error instanceof TypeError) message = "The browser could not connect to the conversion server. This may be a temporary server or network problem. Please retry shortly.";
         convertBtn.hidden = false;
         convertBtn.disabled = false;

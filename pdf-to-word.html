@@ -185,6 +185,11 @@
       finalWordBlob = null;
       downloadBtn.hidden = true;
       resetBtn.hidden = true;
+      convertBtn.hidden = false;
+      convertBtn.disabled = true;
+      btnText.textContent = "Choose a PDF to continue";
+      fileMeta.hidden = true;
+      uploadZone.classList.remove("active");
       if (!file) return;
       if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
         showStatus("error", "Please choose a PDF", "This tool accepts PDF files only.");
@@ -206,7 +211,7 @@
       convertBtn.hidden = false;
       convertBtn.disabled = false;
       btnText.textContent = "Convert to Word";
-      resetBtn.hidden = false;
+      resetBtn.hidden = true;
       setStep(1);
       showStatus("info", "File selected", "Your PDF is ready. Click Convert to Word when you are ready.");
     }

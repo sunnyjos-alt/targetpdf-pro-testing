@@ -1,4 +1,8 @@
 flask
 flask-cors
 pdf2docx
+PyMuPDF
+pytesseract
+Pillow
+python-docx
 gunicorn

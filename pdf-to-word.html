@@ -1,124 +1,299 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF to Word - TargetPDF</title>
-    <style>
-        :root { --primary: #2563EB; --primary-hover: #1D4ED8; --bg: #F8FAFC; --text: #1E293B; --border: #E2E8F0; }
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 40px 20px; margin: 0; min-height: 100vh; }
-        .container { background: white; width: 100%; max-width: 600px; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); text-align: center; height: fit-content; }
-        h1 { font-size: 26px; margin: 0 0 8px 0; color: #0F172A; letter-spacing: -0.5px; }
-        p.subtitle { color: #64748B; margin: 0 0 20px 0; font-size: 15px; }
-        .notice { background: #FEF3C7; color: #92400E; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 24px; text-align: left; border: 1px solid #FDE68A; }
-        .drop-zone { border: 2px dashed #CBD5E1; border-radius: 12px; padding: 40px 20px; cursor: pointer; transition: all 0.2s ease; background: #F8FAFC; margin-bottom: 24px; }
-        .drop-zone:hover { border-color: var(--primary); background: #EFF6FF; }
-        .drop-zone.active { border-color: var(--primary); background: #EFF6FF; }
-        input[type="file"] { display: none; }
-        .btn { background: var(--primary); color: white; border: none; padding: 14px 24px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
-        .btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-        .btn-reset { background: white; color: #64748B; border: 1px solid var(--border); margin-top: 16px; display: none; }
-        .btn-reset:hover { background: #F1F5F9; color: #0F172A; }
-        .spinner { display: none; border: 3px solid #E2E8F0; border-top: 3px solid var(--primary); border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .back-link { display: block; margin-bottom: 20px; color: #64748B; text-decoration: none; font-weight: 500; text-align: left; }
-        .back-link:hover { color: var(--primary); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Convert PDF files into editable Word documents with TargetPDF.">
+  <title>PDF to Word - TargetPDF</title>
+  <style>
+    :root { --primary:#2563eb; --primary-hover:#1d4ed8; --bg:#f8fafc; --text:#1e293b; --muted:#64748b; --border:#e2e8f0; --green:#166534; --green-bg:#f0fdf4; --red:#991b1b; --red-bg:#fef2f2; --blue-bg:#eff6ff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:28px 16px; display:flex; justify-content:center; align-items:flex-start; background:var(--bg); color:var(--text); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    .container { width:100%; max-width:640px; padding:clamp(22px,5vw,40px); background:#fff; border:1px solid #edf0f5; border-radius:18px; box-shadow:0 12px 32px rgba(15,23,42,.06); }
+    .back-link { display:inline-block; margin-bottom:22px; color:var(--muted); text-decoration:none; font-weight:600; font-size:14px; }
+    .back-link:hover { color:var(--primary); }
+    h1 { margin:0 0 8px; font-size:clamp(25px,5vw,32px); letter-spacing:-.6px; color:#0f172a; }
+    .subtitle { margin:0 0 22px; color:var(--muted); line-height:1.6; }
+    .notice { margin-bottom:20px; padding:13px 15px; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; color:#92400e; font-size:13px; line-height:1.55; text-align:left; }
+    .drop-zone { padding:30px 16px; margin-bottom:18px; border:2px dashed #cbd5e1; border-radius:13px; background:#f8fafc; text-align:center; cursor:pointer; transition:border-color .2s,background .2s; }
+    .drop-zone:hover,.drop-zone.active { border-color:var(--primary); background:var(--blue-bg); }
+    .drop-zone:focus-visible { outline:3px solid #93c5fd; outline-offset:3px; }
+    .file-icon { font-size:34px; margin-bottom:7px; }
+    .drop-title { margin:0; font-weight:700; color:var(--primary); }
+    .file-name { margin:7px 0 0; color:var(--muted); font-size:13px; overflow-wrap:anywhere; }
+    input[type=file] { display:none; }
+    .btn { width:100%; min-height:48px; padding:13px 18px; display:flex; justify-content:center; align-items:center; gap:9px; border:0; border-radius:9px; background:var(--primary); color:#fff; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+    .btn:hover:not(:disabled) { background:var(--primary-hover); }
+    .btn:disabled { opacity:.65; cursor:wait; }
+    .btn-secondary { margin-top:10px; background:#fff; color:#334155; border:1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background:#f8fafc; }
+    .spinner { width:19px; height:19px; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .75s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .status { display:none; margin:16px 0 0; padding:13px 14px; border-radius:10px; font-size:14px; line-height:1.55; text-align:left; overflow-wrap:anywhere; }
+    .status.info { display:block; color:#1e40af; background:var(--blue-bg); border:1px solid #bfdbfe; }
+    .status.success { display:block; color:var(--green); background:var(--green-bg); border:1px solid #bbf7d0; }
+    .status.error { display:block; color:var(--red); background:var(--red-bg); border:1px solid #fecaca; }
+    .status strong { display:block; margin-bottom:3px; }
+    .details { margin-top:10px; color:var(--muted); font-size:12px; }
+    .privacy { margin:18px 0 0; color:var(--muted); font-size:12px; line-height:1.55; text-align:center; }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <a href="index.html" class="back-link">← Back to TargetPDF</a>
-        <h1>PDF to Word</h1>
-        <p class="subtitle">Extract text from your PDF into an editable Word document.</p>
-        
-        <div class="notice">
-            <strong>Note:</strong> This tool uses a secure server to convert your file with high accuracy, preserving tables and images perfectly.
-        </div>
+  <main class="container">
+    <a href="index.html" class="back-link">← Back to TargetPDF</a>
+    <h1>PDF to Word</h1>
+    <p class="subtitle">Turn a PDF into an editable Word document. Your finished file will be ready for you to download.</p>
 
-        <div class="drop-zone" id="dropZone" onclick="document.getElementById('pdfFile').click()">
-            <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
-            <p style="margin:0; font-weight:600; color:var(--primary);" id="dropText">Click to select a PDF</p>
-            <p style="margin:4px 0 0; font-size:14px; color:#64748B;" id="fileName">No file selected</p>
-        </div>
-        
-        <input type="file" id="pdfFile" accept=".pdf">
-        
-        <button id="convertBtn" class="btn" style="display:none;" onclick="convertToWord()">
-            <span id="btnText">Convert to Word</span>
-            <div id="loading" class="spinner"></div>
-        </button>
-        
-        <button id="resetBtn" class="btn btn-reset" onclick="resetTool()">Start Over</button>
+    <div class="notice"><strong>Before you start:</strong> Best results usually come from PDFs with selectable text. Scanned pages, unusual fonts, and complex layouts may need extra processing and may not reproduce perfectly.</div>
+
+    <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Choose a PDF file">
+      <div class="file-icon" aria-hidden="true">📄</div>
+      <p class="drop-title" id="dropText">Choose a PDF</p>
+      <p class="file-name" id="fileName">Click here or drop a PDF file</p>
     </div>
+    <input type="file" id="pdfFile" accept="application/pdf,.pdf">
 
-    <script>
-        const BACKEND_URL = "https://targetpdf-backend.onrender.com"; 
-        let finalWordBlob = null;
+    <button id="convertBtn" class="btn" type="button" disabled>
+      <span id="btnText">Select a PDF to begin</span><span id="loading" class="spinner" hidden aria-hidden="true"></span>
+    </button>
+    <button id="downloadBtn" class="btn" type="button" hidden>Download Word document (.docx)</button>
+    <button id="resetBtn" class="btn btn-secondary" type="button" hidden>Convert another PDF</button>
 
-        document.getElementById('pdfFile').addEventListener('change', function() {
-            if(this.files.length > 0) {
-                document.getElementById('fileName').innerText = this.files[0].name;
-                document.getElementById('dropText').innerText = "File Selected";
-                document.getElementById('dropZone').classList.add('active');
-                document.getElementById('convertBtn').style.display = 'flex';
-                document.getElementById('resetBtn').style.display = 'block';
-            }
-        });
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <p class="privacy">Your PDF is sent to our conversion server for processing. Avoid uploading confidential documents. Files are processed in a temporary workspace and are not intended to be stored permanently.</p>
+  </main>
 
-        async function convertToWord() {
-            const fileInput = document.getElementById('pdfFile');
-            const convertBtn = document.getElementById('convertBtn');
-            const btnText = document.getElementById('btnText');
-            const loading = document.getElementById('loading');
+  <script>
+    const BACKEND_URL = "https://targetpdf-backend.onrender.com";
+    const MAX_BYTES = 20 * 1024 * 1024;
+    const fileInput = document.getElementById("pdfFile");
+    const dropZone = document.getElementById("dropZone");
+    const dropText = document.getElementById("dropText");
+    const fileName = document.getElementById("fileName");
+    const convertBtn = document.getElementById("convertBtn");
+    const btnText = document.getElementById("btnText");
+    const loading = document.getElementById("loading");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const statusBox = document.getElementById("status");
+    let finalWordBlob = null;
+    let outputName = "converted.docx";
+    let conversionInProgress = false;
+    let healthState = "checking";
+    let lastObjectUrl = null;
 
-            if (fileInput.files.length === 0) return;
-            const file = fileInput.files[0];
+    function showStatus(type, title, message, detail) {
+      statusBox.className = "status " + type;
+      statusBox.replaceChildren();
+      const strong = document.createElement("strong");
+      strong.textContent = title;
+      statusBox.appendChild(strong);
+      const body = document.createElement("div");
+      body.textContent = message;
+      statusBox.appendChild(body);
+      if (detail) {
+        const small = document.createElement("div");
+        small.className = "details";
+        small.textContent = detail;
+        statusBox.appendChild(small);
+      }
+    }
 
-            convertBtn.disabled = true;
-            btnText.innerText = "Uploading to server...";
-            loading.style.display = 'block';
+    function clearStatus() {
+      statusBox.className = "status";
+      statusBox.replaceChildren();
+    }
 
-            const formData = new FormData();
-            formData.append("file", file);
+    function releaseOldUrl() {
+      if (lastObjectUrl) {
+        URL.revokeObjectURL(lastObjectUrl);
+        lastObjectUrl = null;
+      }
+    }
 
-            try {
-                const response = await fetch(BACKEND_URL + "/convert-to-word", {
-                    method: "POST", body: formData
-                });
+    function baseName(filename) {
+      return filename.replace(/\.pdf$/i, "") || "converted";
+    }
 
-                if (!response.ok) throw new Error("Server could not convert the file.");
+    function selectFile(file) {
+      clearStatus();
+      releaseOldUrl();
+      finalWordBlob = null;
+      downloadBtn.hidden = true;
+      if (!file) return;
+      if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
+        showStatus("error", "Choose a PDF file", "This tool accepts PDF files only.");
+        return;
+      }
+      if (file.size > MAX_BYTES) {
+        showStatus("error", "File is too large", "Please choose a PDF smaller than 20 MB.");
+        return;
+      }
+      if (file.size === 0) {
+        showStatus("error", "This file is empty", "Choose a PDF that contains data.");
+        return;
+      }
+      fileName.textContent = file.name + " · " + formatBytes(file.size);
+      dropText.textContent = "PDF selected";
+      dropZone.classList.add("active");
+      convertBtn.disabled = false;
+      btnText.textContent = "Convert to Word";
+      resetBtn.hidden = false;
+      showStatus("info", "Ready to convert", "Your file is selected. Click Convert to Word to begin.");
+    }
 
-                btnText.innerText = "Downloading Word file...";
-                finalWordBlob = await response.blob();
-                
-                const url = URL.createObjectURL(finalWordBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = file.name.replace(".pdf", ".docx");
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-                btnText.innerText = "Convert Again";
-            } catch (error) {
-                alert("Error: " + error.message + "\n(Ensure you have set up the Render backend)");
-                btnText.innerText = "Convert to Word";
-            } finally {
-                convertBtn.disabled = false;
-                loading.style.display = 'none';
-            }
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    fileInput.addEventListener("change", () => selectFile(fileInput.files[0]));
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        fileInput.click();
+      }
+    });
+    ["dragenter", "dragover"].forEach(name => dropZone.addEventListener(name, event => {
+      event.preventDefault();
+      dropZone.classList.add("active");
+    }));
+    ["dragleave", "drop"].forEach(name => dropZone.addEventListener(name, event => {
+      event.preventDefault();
+      if (name === "drop") {
+        const file = event.dataTransfer.files[0];
+        if (file) {
+          try { fileInput.files = event.dataTransfer.files; } catch (_) {}
+          selectFile(file);
         }
+      } else if (!fileInput.files.length) {
+        dropZone.classList.remove("active");
+      }
+    }));
 
-        function resetTool() {
-            document.getElementById('pdfFile').value = '';
-            document.getElementById('fileName').innerText = "No file selected";
-            document.getElementById('dropText').innerText = "Click to select a PDF";
-            document.getElementById('dropZone').classList.remove('active');
-            document.getElementById('convertBtn').style.display = 'none';
-            document.getElementById('resetBtn').style.display = 'none';
-            document.getElementById('btnText').innerText = "Convert to Word";
-            finalWordBlob = null;
+    async function checkBackend() {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 70000);
+      const started = performance.now();
+      try {
+        const response = await fetch(BACKEND_URL + "/health", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("Backend returned HTTP " + response.status);
+        healthState = "ready";
+        if (!conversionInProgress && !finalWordBlob && fileInput.files.length === 0) {
+          showStatus("info", "Converter ready", "The conversion service is responding. Select a PDF when you are ready.");
+        } else if (!conversionInProgress && !finalWordBlob && fileInput.files.length > 0) {
+          showStatus("info", "Converter ready", "The conversion service is responding. You can start your conversion.");
         }
-    </script>
+      } catch (error) {
+        healthState = "unknown";
+        if (!conversionInProgress && !finalWordBlob) {
+          showStatus("info", "Waking up the conversion service", "The free server may take a little time to start after being idle. You can still try converting; we will show a clear message if it fails.");
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    async function convertToWord() {
+      const file = fileInput.files[0];
+      if (!file || conversionInProgress) return;
+      conversionInProgress = true;
+      const started = performance.now();
+      convertBtn.disabled = true;
+      downloadBtn.hidden = true;
+      btnText.textContent = "Uploading and converting…";
+      loading.hidden = false;
+      showStatus("info", "Conversion in progress", "Uploading your PDF and converting it to Word. Keep this tab open. Larger or complex PDFs can take longer.");
+      const formData = new FormData();
+      formData.append("file", file, file.name);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 180000);
+      try {
+        const response = await fetch(BACKEND_URL + "/convert-to-word", { method: "POST", body: formData, signal: controller.signal });
+        if (!response.ok) {
+          let detail = "The server could not convert this PDF.";
+          try {
+            const data = await response.json();
+            if (data && data.error) detail = data.error;
+          } catch (_) {}
+          if (response.status === 413) detail = "This PDF is larger than the 20 MB upload limit.";
+          if (response.status === 503 || response.status === 502 || response.status === 504) detail = "The conversion server is temporarily unavailable or waking up. Please wait a little and try again.";
+          throw new Error(detail + " (HTTP " + response.status + ")");
+        }
+        const blob = await response.blob();
+        if (!blob.size) throw new Error("The server returned an empty Word file. Please try another PDF.");
+        const contentType = (response.headers.get("content-type") || "").toLowerCase();
+        if (contentType.includes("application/json") || contentType.includes("text/html")) {
+          throw new Error("The server returned an error page instead of a Word document. Please try again.");
+        }
+        finalWordBlob = blob;
+        outputName = baseName(file.name) + ".docx";
+        const totalSeconds = ((performance.now() - started) / 1000).toFixed(1);
+        const backendSeconds = response.headers.get("X-Conversion-Seconds");
+        const details = backendSeconds ? "Server processing: " + Number(backendSeconds).toFixed(1) + " s · Total time: " + totalSeconds + " s" : "Total time: " + totalSeconds + " s";
+        showStatus("success", "Word document is ready", "Your conversion completed. Click the button below to save the editable .docx file.", details);
+        downloadBtn.hidden = false;
+        btnText.textContent = "Convert Again";
+      } catch (error) {
+        let message = error.message || "An unexpected error occurred.";
+        if (error.name === "AbortError") message = "The request took longer than 3 minutes and was stopped. The free server may be overloaded, or this PDF may be unusually complex. Please try again with a smaller or simpler PDF.";
+        else if (error instanceof TypeError) message = "Could not connect to the conversion server. Check your internet connection and try again in a moment. If the problem continues, the server may be waking up or temporarily unavailable.";
+        showStatus("error", "Conversion did not finish", message, "Your original PDF has not been changed. You can retry or choose another file.");
+        btnText.textContent = "Try Conversion Again";
+      } finally {
+        clearTimeout(timeout);
+        conversionInProgress = false;
+        convertBtn.disabled = !fileInput.files.length;
+        loading.hidden = true;
+      }
+    }
+
+    function downloadWord() {
+      if (!finalWordBlob) return;
+      releaseOldUrl();
+      lastObjectUrl = URL.createObjectURL(finalWordBlob);
+      const link = document.createElement("a");
+      link.href = lastObjectUrl;
+      link.download = outputName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showStatus("success", "Download started", "Your Word document has been sent to your browser's downloads. You can download it again if needed.");
+    }
+
+    function resetTool() {
+      releaseOldUrl();
+      finalWordBlob = null;
+      fileInput.value = "";
+      fileName.textContent = "Click here or drop a PDF file";
+      dropText.textContent = "Choose a PDF";
+      dropZone.classList.remove("active");
+      convertBtn.disabled = true;
+      btnText.textContent = "Select a PDF to begin";
+      downloadBtn.hidden = true;
+      resetBtn.hidden = true;
+      clearStatus();
+    }
+
+    convertBtn.addEventListener("click", () => {
+      if (finalWordBlob && !conversionInProgress) {
+        finalWordBlob = null;
+        downloadBtn.hidden = true;
+        convertToWord();
+      } else {
+        convertToWord();
+      }
+    });
+    downloadBtn.addEventListener("click", downloadWord);
+    resetBtn.addEventListener("click", resetTool);
+    window.addEventListener("pagehide", releaseOldUrl);
+
+    // Start the health check immediately so a sleeping free backend can wake
+    // while the user reads the page or selects a file.
+    checkBackend();
+  </script>
 </body>
 </html>

@@ -9,6 +9,7 @@ from PIL import Image
 import fitz
 import logging
 import os
+import shutil
 import tempfile
 import time
 
@@ -45,7 +46,9 @@ def health():
     return jsonify({
         "status": "ok",
         "service": "TargetPDF PDF-to-Word backend",
-        "ocr_available": bool(OCR_AVAILABLE and os.path.exists("/usr/bin/tesseract")),
+        "ocr_available": bool(OCR_AVAILABLE and shutil.which("tesseract")),
+        "pytesseract_imported": bool(OCR_AVAILABLE),
+        "tesseract_executable": shutil.which("tesseract"),
         "features": ["text-pdf-conversion", "pdf-page-analysis", "scanned-pdf-ocr"],
     }), 200
 
@@ -98,7 +101,7 @@ def page_text_or_ocr(page, extracted_text):
     # image-only pages. This avoids duplicate text on common mixed pages.
     if len(extracted_text.strip()) >= 40:
         return extracted_text.strip(), False
-    if not (OCR_AVAILABLE and os.path.exists("/usr/bin/tesseract")):
+    if not (OCR_AVAILABLE and shutil.which("tesseract")):
         return extracted_text.strip(), False
     pix = page.get_pixmap(matrix=fitz.Matrix(1.8, 1.8), colorspace=fitz.csGRAY, alpha=False)
     image = Image.open(BytesIO(pix.tobytes("png")))

@@ -160,6 +160,10 @@ def convert_with_pdf2docx(pdf_path, docx_path):
     # Verify the DOCX can be opened and contains some editable text.
     check = Document(BytesIO(data))
     text_chars = sum(len(p.text.strip()) for p in check.paragraphs)
+    for table in check.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                text_chars += len(cell.text.strip())
     return data, text_chars
 
 
@@ -193,7 +197,7 @@ def convert_to_word():
             page_texts, page_count, text_pages, scan_pages = inspect_pdf(pdf_path)
             text_ratio = text_pages / page_count
 
-            if text_ratio >= 0.85:
+            if text_ratio >= 0.98:
                 docx_bytes, output_chars = convert_with_pdf2docx(pdf_path, docx_path)
                 mode = "PDF layout conversion"
                 notes = (

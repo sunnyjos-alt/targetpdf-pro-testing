@@ -1,8 +1,8 @@
 flask
 flask-cors
-pdf2docx
-PyMuPDF
-pytesseract>=0.3.10
-pillow>=10.0.0
+pdf2docx==0.5.8
+PyMuPDF==1.26.7
+pytesseract==0.3.13
+pillow>=10.0.0,<12.0.0
 python-docx
 gunicorn

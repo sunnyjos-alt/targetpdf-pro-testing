@@ -17,4 +17,4 @@ COPY . /app
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 120 --graceful-timeout 30 app:app"]

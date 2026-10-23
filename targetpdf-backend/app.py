@@ -103,7 +103,7 @@ def page_text_or_ocr(page, extracted_text):
         return extracted_text.strip(), False
     if not (OCR_AVAILABLE and shutil.which("tesseract")):
         return extracted_text.strip(), False
-    pix = page.get_pixmap(matrix=fitz.Matrix(1.8, 1.8), colorspace=fitz.csGRAY, alpha=False)
+    pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), colorspace=fitz.csGRAY, alpha=False)
     image = Image.open(BytesIO(pix.tobytes("png")))
     text = pytesseract.image_to_string(image, lang="eng", config="--psm 3")
     return text.strip(), True
@@ -111,7 +111,7 @@ def page_text_or_ocr(page, extracted_text):
 
 def convert_with_ocr_or_text(pdf_path, page_texts, page_count):
     """Fallback for scanned/mixed PDFs: create editable text in original page order."""
-    if not (OCR_AVAILABLE and os.path.exists("/usr/bin/tesseract")):
+    if not (OCR_AVAILABLE and shutil.which("tesseract")):
         raise RuntimeError(
             "This PDF appears to contain scanned pages, but OCR is not available on the server yet."
         )
